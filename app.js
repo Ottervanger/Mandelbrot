@@ -1,6 +1,6 @@
 window.onload = () => {
   const plot = new lumo.Plot('#plot', {
-    inertia: true,
+    inertia: false,
     zoom: 2,
     maxZoom: 47
   });
@@ -18,6 +18,7 @@ window.onload = () => {
 const SHADER_GLSL = {
   vert:
     `
+    precision highp float;
     attribute vec2 coordinates;
     void main(void) {
       gl_Position = vec4(coordinates,0.0, 1.0);
@@ -25,39 +26,35 @@ const SHADER_GLSL = {
     `,
   frag:
     `
-    precision highp float;
+    precision mediump float;
     uniform vec2 resolution;
     uniform sampler2D a_texture;
     uniform float scale;
     uniform vec2 center;
 
     void main() {
-      float rHeight = 4.0;
-      vec4 col = vec4(0.0,0.0,0.0,0.0);
-      float l_count = 0.0;
-      vec2 temp_FragCoord = gl_FragCoord.xy;
-      for (int dx = 0; dx < 2; dx++){
-        for (int dy = 0; dy < 2; dy++){
-          vec2 position = (temp_FragCoord.xy + vec2(dx,dy)/3.0) * scale + center;
-          vec2 z = vec2(0.0,0.0);
-          for (int i = 0; i < 100; i++){
-            z = position + vec2(
-              z.x*z.x-z.y*z.y,
-              2.0*z.x*z.y
-            );
-            if (length(z) > 2.0){
-              col += texture2D(a_texture, vec2(0.5,mod(float(i+4), 32.0)/32.0))/255.0;
-              l_count++;
-              break;
-            }
+      vec2 samples[4];
+      samples[0] = vec2(-.25,-.75);
+      samples[1] = vec2( .75,-.25);
+      samples[2] = vec2(-.75, .25);
+      samples[3] = vec2( .25, .75);
+
+      vec3 col = vec3(0.0);
+      for (int ss = 0; ss < 4; ss++) {
+        vec2 c = (gl_FragCoord.xy + samples[ss]) * scale + center;
+        vec2 z = vec2(0.0);
+        for (int i = 0; i < 500; i++){
+          z = c + vec2(
+            z.x * z.x - z.y * z.y,
+            2.0 * z.x * z.y
+          );
+          if (length(z) > 2.0){
+            col += texture2D(a_texture, vec2(0.5,mod(float(i+4), 32.0)/32.0)).xyz/255.0;
+            break;
           }
         }
       }
-      if (l_count != 0.0){
-        gl_FragColor = col/l_count;
-      } else {
-        gl_FragColor = vec4(0,0,0,1.0);
-      }
+      gl_FragColor = vec4(col/4.0, 1.0);
     }
     `
 };
@@ -112,10 +109,12 @@ function init() {
   var vertShader = gl.createShader(gl.VERTEX_SHADER);       // Create a vertex shader object
   gl.shaderSource(vertShader, SHADER_GLSL.vert);                    // Attach vertex shader source code
   gl.compileShader(vertShader);                             // Compile the vertex shader
+  console.log(gl.getShaderInfoLog(vertShader));
 
   var fragShader = gl.createShader(gl.FRAGMENT_SHADER);     // Create fragment shader object
   gl.shaderSource(fragShader, SHADER_GLSL.frag);            // Attach fragment shader source code
   gl.compileShader(fragShader);                             // Compile the fragment shader
+  console.log(gl.getShaderInfoLog(fragShader));
 
   // Create a shader program object to store combined shader program
   var shaderProgram = gl.createProgram();
@@ -124,9 +123,7 @@ function init() {
   gl.linkProgram(shaderProgram);                            // Link both programs
   glEnv.shaderProgram = shaderProgram;
 
-  gl.clearColor(0.5, 0.5, 0.5, 0.9);                        // Clear the canvas
   gl.enable(gl.DEPTH_TEST);                                 // Enable the depth test
-  gl.clear(gl.COLOR_BUFFER_BIT);                            // Clear the color buffer bit
   
   // palette for colouring iterations
   var palette = [
@@ -165,8 +162,8 @@ function init() {
   ];
   
   //*** create target texture
-  const width = 256;
-  const height = 256;
+  const width = 512;
+  const height = width;
   gl.canvas.width = width;
   gl.canvas.height = height;
   const tex = gl.createTexture();
@@ -197,17 +194,16 @@ function init() {
 }
 
 function createTileTexture(coord) {
-  console.log(coord);
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  const width = 256;
-  const height = 256;
+  const width = 512;
+  const height = width;
   // Use the combined shader program object
 
   /* Associate the shader programs to buffer objects */
   // coordinate transformantion
   const step = (4 / 2**coord.z);
   const trans = {
-    k: step/256,
+    k: step/width,
     x: coord.x * step - 2,
     y: coord.y * step - 2
   };
