@@ -1,0 +1,30 @@
+body {
+  display: flex;
+  height: 100vh;
+  margin: 0;
+  flex-flow: column nowrap;
+}
+
+h1 {
+  font-family: sans-serif;
+  text-align: center;
+  flex: 1;
+}
+
+#pic {
+  flex: 10;background: url(https://upload.wikimedia.org/wikipedia/commons/4/4d/Mandelbrot_2010.png) no-repeat center/contain;
+}
+
+#plot {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  background: rgb(9 1 55);
+}

@@ -1,27 +1,14 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <style type="text/css">
-      body {
-        display: flex;
-        height: 100vh;
-        margin: 0;
-        flex-flow: column nowrap;
-      }
-
-      h1 {
-        font-family: sans-serif;
-        text-align: center;
-        flex: 1;
-      }
-
-      div {
-        flex: 10;background: url(https://upload.wikimedia.org/wikipedia/commons/4/4d/Mandelbrot_2010.png) no-repeat center/contain;
-      }
-    </style>
+    <title>Mandelbrot</title>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <script src="lumo.min.js"></script>
+    <script src="app.js"></script>
+    <link href="style.css" rel="stylesheet" type='text/css'/>
   </head>
   <body>
-    <h1>Mandelbrot</h1>
-    <div></div>
+    <div id="plot"></div>
   </body>
 </html>
