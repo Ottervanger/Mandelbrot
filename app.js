@@ -1,6 +1,6 @@
 window.onload = () => {
   const plot = new lumo.Plot('#plot', {
-    inertia: false,
+    inertia: true,
     zoom: 2,
     maxZoom: 47
   });
@@ -26,7 +26,7 @@ const SHADER_GLSL = {
     `,
   frag:
     `
-    precision mediump float;
+    precision highp float;
     uniform vec2 resolution;
     uniform sampler2D a_texture;
     uniform float scale;
@@ -49,7 +49,7 @@ const SHADER_GLSL = {
             2.0 * z.x * z.y
           );
           if (length(z) > 2.0){
-            col += texture2D(a_texture, vec2(0.5,mod(float(i+4), 32.0)/32.0)).xyz/255.0;
+            col += texture2D(a_texture, vec2(0.5,float(i+4)/32.0)).xyz/255.0;
             break;
           }
         }
@@ -241,6 +241,8 @@ function textureFromFloats(gl, width, height, float32Array) {
 
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   gl.bindTexture(gl.TEXTURE_2D, null);
   gl.activeTexture(oldActive);
   return texture;

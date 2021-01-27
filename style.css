@@ -27,4 +27,5 @@ h1 {
   -ms-user-select: none;
   user-select: none;
   background: rgb(9 1 55);
+  touch-action: none;
 }
