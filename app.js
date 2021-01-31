@@ -2,15 +2,12 @@ window.onload = () => {
   const plot = new lumo.Plot('#plot', {
     inertia: true,
     zoom: 2,
+    center: { x: 0.33, y: 0.5 },
     maxZoom: 47
   });
   window.plot = plot;
   // global gl context for texture rendering
   window.gl = document.createElement("canvas").getContext("webgl");
-  if (!gl.getExtension("OES_texture_float")) {
-    alert("cant pass in floats, use 8-bit values instead.");
-    return;
-  }
   init();
   addTextureOverlay(plot);
 };
@@ -34,6 +31,7 @@ const SHADER_GLSL = {
 
     void main() {
       vec2 samples[4];
+      vec2 coord = gl_FragCoord.xy;
       samples[0] = vec2(-.25,-.75);
       samples[1] = vec2( .75,-.25);
       samples[2] = vec2(-.75, .25);
@@ -41,7 +39,7 @@ const SHADER_GLSL = {
 
       vec3 col = vec3(0.0);
       for (int ss = 0; ss < 4; ss++) {
-        vec2 c = (gl_FragCoord.xy + samples[ss]) * scale + center;
+        vec2 c = (coord + samples[ss]) * scale + center;
         vec2 z = vec2(0.0);
         for (int i = 0; i < 500; i++){
           z = c + vec2(
@@ -49,7 +47,7 @@ const SHADER_GLSL = {
             2.0 * z.x * z.y
           );
           if (length(z) > 2.0){
-            col += texture2D(a_texture, vec2(0.5,float(i+4)/32.0)).xyz/255.0;
+            col += texture2D(a_texture, vec2(0.5,(2.5/16.0) + float(i)/300.0)).xyz;
             break;
           }
         }
@@ -128,37 +126,21 @@ function init() {
   // palette for colouring iterations
   var palette = [
    66,  30,  15, 255,
-   45,  13,  20, 255,
    25,   7,  26, 255,
-   20,   4,  36, 255,
     9,   1,  55, 255,
-    6,   2,  60, 255,
     4,   4,  73, 255,
-    2,   5,  86, 255,
     1,   7, 100, 255,
-    6,  25, 119, 255,
    12,  44, 138, 255,
-   18,  63, 157, 255,
    24,  82, 177, 255,
-   40, 103, 193, 255,
    57, 125, 209, 255,
-   95, 152, 219, 255,
   134, 181, 229, 255,
-  172, 208, 239, 255,
   211, 236, 248, 255,
-  226, 234, 220, 255,
   241, 233, 191, 255,
-  244, 217, 143, 255,
   248, 201,  95, 255,
-  251, 185,  47, 255,
   255, 170,   0, 255,
-  235, 150,   0, 255,
   204, 128,   0, 255,
-  178, 108,   0, 255,
   153,  87,   0, 255,
-  129,  70,   1, 255,
   106,  52,   3, 255,
-   80,  41,   8, 255,
   ];
   
   //*** create target texture
@@ -187,7 +169,7 @@ function init() {
 
   var textureUnit = 3;
   gl.activeTexture(gl.TEXTURE0 + textureUnit);
-  gl.bindTexture(gl.TEXTURE_2D, textureFromFloats(gl, 1, 32, new Float32Array(palette)));
+  gl.bindTexture(gl.TEXTURE_2D, textureFromArray(gl, 1, 16, new Uint8Array(palette)));
   glEnv.textureUnit = textureUnit;
   window.glEnv = glEnv;
   gl.useProgram(glEnv.shaderProgram);
@@ -226,21 +208,19 @@ function createTileTexture(coord) {
   return gl.canvas;
 }
 
-// Float32Array as texture for variable indexing
-// https://stackoverflow.com/questions/19529690/index-expression-must-be-constant-webgl-glsl-error
-function textureFromFloats(gl, width, height, float32Array) {
+function textureFromArray(gl, width, height, arr) {
   var oldActive = gl.getParameter(gl.ACTIVE_TEXTURE);
   gl.activeTexture(gl.TEXTURE15);
 
   var texture = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 
                 width, height, 0,
-                gl.RGBA, gl.FLOAT, float32Array);
+                gl.RGB, gl.UNSIGNED_BYTE, arr);
 
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
   gl.bindTexture(gl.TEXTURE_2D, null);
