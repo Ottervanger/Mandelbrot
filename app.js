@@ -41,13 +41,15 @@ const SHADER_GLSL = {
       for (int ss = 0; ss < 4; ss++) {
         vec2 c = (coord + samples[ss]) * scale + center;
         vec2 z = vec2(0.0);
+        vec2 zz = vec2(0.0);
         for (int i = 0; i < 500; i++){
           z = c + vec2(
-            z.x * z.x - z.y * z.y,
+            zz.x - zz.y,
             2.0 * z.x * z.y
           );
-          if (length(z) > 2.0){
-            col += texture2D(a_texture, vec2(0.5,(2.5/16.0) + float(i)/300.0)).xyz;
+          zz = vec2(z.x * z.x, z.y * z.y);
+          if (zz.x + zz.y > 4.0){
+            col += texture2D(a_texture, vec2(0.5,(.5/16.0) + float(i)/300.0)).xyz;
             break;
           }
         }
@@ -125,9 +127,7 @@ function init() {
   
   // palette for colouring iterations
   var palette = [
-   66,  30,  15, 255,
-   25,   7,  26, 255,
-    9,   1,  55, 255,
+    9,   1,  47, 255,
     4,   4,  73, 255,
     1,   7, 100, 255,
    12,  44, 138, 255,
@@ -141,6 +141,8 @@ function init() {
   204, 128,   0, 255,
   153,  87,   0, 255,
   106,  52,   3, 255,
+   66,  30,  15, 255,
+   25,   7,  26, 255,
   ];
   
   //*** create target texture
