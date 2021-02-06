@@ -28,7 +28,7 @@ const SHADER_GLSL = {
         vec2 c = (coord + samples[ss]) * scale + center;
         vec2 z = vec2(0.0);
         vec2 zz = vec2(0.0);
-        for (int i = 0; i < 5000; i++){
+        for (int i = 0; i < 2000; i++){
           z = c + vec2(
             zz.x - zz.y,
             2.0 * z.x * z.y
@@ -72,6 +72,9 @@ function init() {
   const width = 128;
   const height = width;
   gl = (new OffscreenCanvas(width, height)).getContext("webgl");
+  gl.canvas.addEventListener("webglcontextlost", (e) => {
+    alert('Error: WebGL context lost. Try running on more powerfull hardware.');
+  }, false);
   const glEnv = {};
   //*** prepare for draw
   var vertices = [ 1,-1,  -1, 1,  -1,-1,

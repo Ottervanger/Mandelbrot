@@ -10,6 +10,7 @@ window.onload = () => {
 
   
   const texture = new lumo.TileLayer({
+    cacheSize: 512,
     renderer: new lumo.ImageTileRenderer()
   });
 
