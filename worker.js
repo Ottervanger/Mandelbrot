@@ -55,13 +55,13 @@ function numToCol(num, d) {
 function createTileCanvas(coord) {
   // var canvas = document.createElement('canvas');
   const width = 256;
-  const height = 256;
+  const height = width;
   var canvas = new OffscreenCanvas(width, height);
   var ctx = canvas.getContext("2d");
-  const d = 256 / 2**(coord.z);
+  const d = width / 2**(coord.z);
   ctx.fillStyle = '#88' + numToCol(coord.x, d) + numToCol(coord.y, d);
   console.log(coord, '#ff' + Math.floor(coord.x * d).toString(16) + Math.floor(coord.y * d).toString(16))
-  ctx.fillRect(0, 0, 256, 256);
+  ctx.fillRect(0, 0, width, height);
   ctx.fillStyle = 'black';
   ctx.font = "24px Arial";
   ctx.fillText(`${coord.hash}`, 10, 50);
@@ -69,7 +69,7 @@ function createTileCanvas(coord) {
 }
 
 function init() {
-  const width = 256;
+  const width = 128;
   const height = width;
   gl = (new OffscreenCanvas(width, height)).getContext("webgl");
   const glEnv = {};
@@ -129,13 +129,15 @@ function init() {
   gl.bindTexture(gl.TEXTURE_2D, textureFromArray(gl, 1, 16, new Uint8Array(palette)));
   glEnv.textureUnit = textureUnit;
   gl.useProgram(glEnv.shaderProgram);
+  gl.flush();
+  gl.finish();
   return glEnv;
 }
 
 function createTileTexture(coord) {
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
-  const width = 256;
-  const height = width;
+  const width = gl.canvas.width;
+  const height = gl.canvas.height;
   // Use the combined shader program object
 
   /* Associate the shader programs to buffer objects */
@@ -162,7 +164,10 @@ function createTileTexture(coord) {
   //** draw
   gl.viewport(0, 0, width, height);
   gl.drawArrays(gl.TRIANGLES, 0, 6);
+  gl.flush();
   gl.finish();
+  // blocks until draw is done with minimal overhead
+  gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
   return createImageBitmap(gl.canvas);
 }
 
