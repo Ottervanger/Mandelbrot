@@ -18,4 +18,5 @@ body {
   user-select: none;
   background: rgb(9 1 47);
   touch-action: none;
+  overflow: hidden;
 }
