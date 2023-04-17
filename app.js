@@ -18,7 +18,7 @@ window.onload = () => {
   let worker = new Worker('worker.js');
 
   texture.requestTile = (coord, done) => {
-    worker.postMessage({'cmd': 'getTile', 'coord': coord});
+    worker.postMessage({cmd: 'getTile', coord: coord});
     tileCallback[coord.hash] = done;
   };
 
@@ -41,5 +41,10 @@ window.onload = () => {
   if (window.location.hash) {
     var [x, y, z] = window.location.hash.substr(1).split(':').map(parseFloat);
     window.plot.zoomToPosition(z, {x: x, y: y}, antimate=false);
+  }
+
+  window.setShaderOptions = function(options = {}) {
+    worker.postMessage({cmd: 'setShaderOptions', options: options});
+    plot.layers[0].refresh()
   }
 };
