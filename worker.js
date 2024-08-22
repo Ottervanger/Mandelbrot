@@ -18,15 +18,15 @@ function getFragShader(hip, depth) {
 
       //-----------------------
       float times_frc(float a, float b) {
-        return mix(0.0, a * b, b != 0.0 ? 1.0 : 0.0);
+        return (b != 0.0) ? (a * b) : 0.0;
       }
 
       float plus_frc(float a, float b) {
-        return mix(a, a + b, b != 0.0 ? 1.0 : 0.0);
+        return (b != 0.0) ? (a + b) : a;
       }
 
       float minus_frc(float a, float b) {
-        return mix(a, a - b, b != 0.0 ? 1.0 : 0.0);
+        return (b != 0.0) ? (a - b) : a;
       }
 
       // Double emulation based on GLSL Mandelbrot Shader by Henry Thasler (www.thasler.org/blog)
