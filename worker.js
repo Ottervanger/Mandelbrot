@@ -236,6 +236,7 @@ function init() {
     alert('Error: WebGL context lost. Try running on more powerfull hardware.');
   }, false);
   const glEnv = {};
+  WorkerGlobalScope.glEnv = glEnv;
   //*** prepare for draw
   var vertices = [ 1,-1,  -1, 1,  -1,-1,
                    1,-1,  -1, 1,   1, 1];
@@ -273,27 +274,30 @@ function init() {
   gl.activeTexture(gl.TEXTURE0 + textureUnit);
   gl.bindTexture(gl.TEXTURE_2D, textureFromArray(gl, 1, 16, new Uint8Array(palette)));
   glEnv.textureUnit = textureUnit;
-  glEnv.shaderProgram = buildShaderProgram();
+  glEnv.shaderOptions = {hip: false, depth: 3000};
+  glEnv.shaderProgram = buildShaderProgram({});
   gl.flush();
   gl.finish();
   return glEnv;
 }
 
 function buildShaderProgram(options) {
-  // Default options.
-  options = {hip: false, depth: 3000, ...options};
+  options = {...WorkerGlobalScope.glEnv.shaderOptions, ...options};
   var vertShader = buildShader(VERT_SHADER, gl.VERTEX_SHADER);
   var fragShader = buildShader(getFragShader(options.hip, options.depth), gl.FRAGMENT_SHADER);
+  WorkerGlobalScope.glEnv.shaderOptions = options;
   var shaderProgram = gl.createProgram();
   gl.attachShader(shaderProgram, vertShader);
   gl.attachShader(shaderProgram, fragShader);
   gl.linkProgram(shaderProgram);
+  console.log(gl.getProgramInfoLog(shaderProgram));
   gl.useProgram(shaderProgram);
   return shaderProgram;
 }
 
 function createTileTexture(coord) {
   gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  const glEnv = WorkerGlobalScope.glEnv;
   const width = gl.canvas.width;
   const height = gl.canvas.height;
   // Use the combined shader program object
@@ -350,7 +354,7 @@ function textureFromArray(gl, width, height, arr) {
   return texture;
 }
 
-glEnv = init();
+init();
 
 self.onmessage = (e) => {
   if (e.data.cmd === 'getTile') {
@@ -358,7 +362,7 @@ self.onmessage = (e) => {
       self.postMessage({'tile': canvas, 'hash': e.data.coord.hash}, [canvas]);
     });
   } else if (e.data.cmd === 'setShaderOptions') {
-    glEnv.shaderProgram = buildShaderProgram(e.data.options);
+    WorkerGlobalScope.glEnv.shaderProgram = buildShaderProgram(e.data.options);
   }
 };
 

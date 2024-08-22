@@ -7,8 +7,21 @@
     <script src="../lumo/build/lumo.js"></script>
     <script src="app.js"></script>
     <link href="style.css" rel="stylesheet" type='text/css'/>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
   </head>
   <body>
     <div id="plot"></div>
+    <div id="ui">
+      <div>
+        <label for="hip">Double precision</label>
+        <input type="checkbox" id="hip"  oninput="setShaderOptions({hip: this.checked})">
+      </div>
+      <div>
+        <label for="depth">Max iteration depth</label>
+        <input type="number" id="depth" min=100 max=10000 value="3000" oninput="setShaderOptions({depth: this.value})">
+      </div>
+    </div>
   </body>
 </html>

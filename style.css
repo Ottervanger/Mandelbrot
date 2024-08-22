@@ -3,6 +3,7 @@ body {
   height: 100vh;
   margin: 0;
   flex-flow: column nowrap;
+  font-family: 'Roboto', sans-serif;
 }
 
 #plot {
@@ -19,4 +20,11 @@ body {
   background: rgb(9 1 47);
   touch-action: none;
   overflow: hidden;
+}
+
+#ui {
+  position: absolute;
+  background: white;
+  display: flex;
+  flex-direction: column;
 }
